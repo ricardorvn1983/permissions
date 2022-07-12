@@ -1,0 +1,28 @@
+stages:
+ - build-backup
+ - deploy
+build-backup-image:
+  image: docker:20.10.14
+  tags:
+    - dockerrunner
+  stage: build-backup
+  variables: 
+   DOCKER_TLS_CERTDIR: ''
+  script:
+    - docker build -t $CI_PROJECT_NAME:$CI_COMMIT_TAG .
+    - docker tag $CI_PROJECT_NAME:$CI_COMMIT_TAG 10.0.64.39:5000/$CI_PROJECT_NAME:$CI_COMMIT_TAG
+    - docker push 10.0.64.39:5000/$CI_PROJECT_NAME:$CI_COMMIT_TAG
+  rules:
+    - if: $CI_COMMIT_TAG
+deploy-image:
+  image: docker:20.10.14
+  tags:
+    - dockerrunner
+  stage: deploy
+  script:
+    - docker pull 10.0.64.39:5000/$CI_PROJECT_NAME:$CI_COMMIT_TAG
+    - docker stop $CI_PROJECT_NAME
+    - docker rm $CI_PROJECT_NAME
+    - docker run --name=$CI_PROJECT_NAME --restart unless-stopped -d -p 4101:4101 10.0.64.39:5000/$CI_PROJECT_NAME:$CI_COMMIT_TAG
+  rules:
+    - if: $CI_COMMIT_TAG
