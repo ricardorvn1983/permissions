@@ -54,7 +54,7 @@ class Server {
     async pshDbConnect(){
         try {
             await pshdb.authenticate();
-            console.log ("Connected to PSH DB in Galan");
+            console.log ("Connected to PSH DB");
         }catch ( e: any ){
             throw new Error ( e )
         }
